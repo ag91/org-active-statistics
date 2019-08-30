@@ -1,0 +1,22 @@
+* Org active statistics
+:PROPERTIES:
+:CREATED:  [2019-08-30 Fri 21:13]
+:END:
+
+# TODO Add video here
+
+This is a simple add-on for org mode. I found it wasteful to close tasks
+(i.e., marking heading as DONE) when all my sub-headings or check-boxes
+are marked completed themselves.
+
+One way to use is to copy the file into your preferred directory and
+use the marvellous [[https://github.com/jwiegley/use-package][use-package.el]] like follows:
+
+#+begin_src elisp
+(use-package org-active-statistics
+  :after org
+  :commands org-toggle-active-statistics
+  :load-path "path-to-your-directory"
+  :config
+    (org-toggle-active-statistics))
+#+end_src
