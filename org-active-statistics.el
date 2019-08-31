@@ -31,10 +31,10 @@
 
 ;;; Code:
 
-(defgroup oas nil
+(defgroup org-active-statistics.el nil
   "Options specific to Org active statistics."
   :tag "Org active statistics"
-  :group 'oas)
+  :group 'org-active-statistics.el)
 
 
 (defun oas/org-statistics-cookie-complete-p ()
@@ -126,7 +126,7 @@
         (oas/org-active-statistics-turn-off)
       (oas/org-active-statistics-turn-on))))
 
-(provide 'oas)
+(provide 'org-active-statistics.el)
 ;;; org-active-statistics.el ends here
 
 ;; Local Variables:
