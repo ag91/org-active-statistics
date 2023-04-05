@@ -1,10 +1,10 @@
 ;;; org-active-statistics.el --- Make org todos with statistics react.
 
-;; Copyright (C) 2019 Andrea Giugliano
+;; Copyright (C) 2023 Andrea
 
-;; Author: Andrea Giugliano <agiugliano@live.it>
+;; Author: Andrea <andrea-dev@hotmail.com>
 ;; Version: 0.0.0
-;; Package-Version: 20180607.000
+;; Package-Version: 20230405.000
 ;; Keywords: org-mode
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@
 (defgroup org-active-statistics.el nil
   "Options specific to Org active statistics."
   :tag "Org active statistics"
-  :group 'org-active-statistics.el)
+  :group 'org-active-statistics)
 
 
 (defun oas/org-statistics-cookie-complete-p ()
@@ -116,9 +116,11 @@
 
 ;;;###autoload
 
-(defun oas/org-toggle-active-statistics ()
-  "Toggle active statistics. When a cookie is completed and all subtasks and checkbox are marked complete, the task switch to  DONE."
-  (interactive)
+(define-minor-mode org-active-statistics
+  "Toggle active statistics.
+When a cookie is completed and all subtasks and checkbox are marked complete,
+the task switch to  DONE."
+  :group 'org-active-statistics
   (let ((are-hooks-set (or
                         (member 'oas/update-todo-if-todo-statistics-complete org-after-todo-statistics-hook)
                         (member 'oas/update-todo-if-statistics-complete org-checkbox-statistics-hook))))
