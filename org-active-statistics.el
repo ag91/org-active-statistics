@@ -37,81 +37,48 @@
   :group 'org-active-statistics)
 
 
-(defun oas/org-statistics-cookie-complete-p ()
-  "Return NIL if the cookie at point is not completed."
-  (if (progn
-        (beginning-of-line)
-        ;; get to the stats cookie
-        (oas/search-in-region "\\(\\(\\[[0-9]*%\\]\\)\\|\\(\\[[0-9]*/[0-9]*\\]\\)\\)" (point-at-bol) (point-at-eol) 're-search-forward t)
-        (search-backward "[" nil t))
-      (progn
-        (goto-char (- (point) 1))
-        (or
-         (save-excursion ;; case [100%]
-           (oas/search-in-region ;; TODO use search forward
-            "100%"
-            (point)
-            (save-excursion (search-forward "]" (point-at-eol) t))
-            nil
-            t))
-         (save-excursion ;; case [x/x]
-           (oas/search-in-region
-            "/"
-            (point)
-            (save-excursion (search-forward "]" (point-at-eol) t))
-            nil
-            t)
-           (string= (string (char-before (- (point) 1))) (string (char-after)))
-           )))))
-
-(defun oas/search-in-region (string bgn end &optional search-fn noerror count)
-  "TODO" ;; TODO make interactive?
-  (goto-char bgn)
-  (funcall (or search-fn 'search-forward) string end noerror count))
-
-(defun oas/org-heading-complete-p ()
-  "Return NIL for a  heading containing todo headings, and the position of the last done heading otherwise."
-  (save-excursion
-    (let ((end (save-excursion (org-end-of-subtree))))
-      (end-of-line)
-      (not (search-forward "** TODO" end t)))))
-
 (defun oas/valid-heading-p (org-heading-components)
   "A valid ORG-HEADING-COMPONENTS for a heading must have a todo and some text in the headline."
   (let ((todo-state (third org-heading-components))
         (headline (fifth org-heading-components)))
     (and todo-state headline)))
 
-(defun oas/update-todo-if-all-subheadings-done (&args _)
-  "Update todo heading to done if statistics cookie is complete and there are no todo heading pending."
+(defun oas/all-checkbox-done-p ()
+  "Return NIL if any checkbox in the current heading is not completed (i.e.,[X])."
+  (save-excursion
+    (while (org-up-heading-safe))
+    (and
+     (org-list-search-forward (org-item-beginning-re) (save-excursion (org-end-of-subtree)) t)
+     (--every (not (-contains-p it "[ ]")) (org-element-property :structure (org-element-at-point))))))
+
+(defun oas/all-subheading-done-p ()
+  "Return NIL if any there is any \"** TODO\" in the current heading."
+  (save-excursion
+    (while (org-up-heading-safe))
+    (end-of-line)
+    (not (search-forward "** TODO" (save-excursion (org-end-of-subtree)) t))))
+
+(defun oas/update-heading-by-completion (&optional _ _)
+  "Update heading by completion."
   (save-excursion
     (org-back-to-heading)
     (when (oas/valid-heading-p (org-heading-components))
-      (let ((todo (if (and
-                       (oas/org-heading-complete-p)
-                       (oas/org-statistics-cookie-complete-p))
+      (let (org-log-done
+            org-log-states
+            (todo (if (and
+                       (oas/all-checkbox-done-p)
+                       (oas/all-subheading-done-p))
                       "DONE"
                     "TODO")))
         (org-todo todo)))))
 
-(defun oas/all-checkbox-done-p ()
-  "Return NIL if any checkbox in the current heading is not completed (i.e.,[X])."
-  (--every (not (-contains-p it "[ ]")) (org-element-property :structure (org-element-at-point))))
-
-(defun oas/update-todo-if-all-checkboxes-done ()
-  "Switch entry to DONE when all subentries are done, to TODO otherwise. Given the cookie [x/y] N-DONE is x and N-NOT-DONE is (y - x)."
-  (let (org-log-done org-log-states)   ; turn off logging
-    (when (oas/valid-heading-p (org-heading-components))
-      (org-todo (if (oas/all-checkbox-done-p) "DONE" "TODO")))))
-
-
 (defun oas/org-active-statistics-turn-off ()
-  (remove-hook 'org-after-todo-statistics-hook 'oas/update-todo-if-all-subheadings-done)
-  (remove-hook 'org-checkbox-statistics-hook 'oas/update-todo-if-all-checkboxes-done))
+  (remove-hook 'org-after-todo-statistics-hook 'oas/update-heading-by-completion)
+  (remove-hook 'org-checkbox-statistics-hook 'oas/update-heading-by-completion))
 
 (defun oas/org-active-statistics-turn-on ()
-  (add-hook 'org-after-todo-statistics-hook 'oas/update-todo-if-all-subheadings-done)
-  (add-hook 'org-checkbox-statistics-hook 'oas/update-todo-if-all-checkboxes-done))
+  (add-hook 'org-after-todo-statistics-hook 'oas/update-heading-by-completion)
+  (add-hook 'org-checkbox-statistics-hook 'oas/update-heading-by-completion))
 
 ;;;###autoload
 
