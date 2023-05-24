@@ -127,7 +127,7 @@ the task switch to  DONE."
         (oas/org-active-statistics-turn-off)
       (oas/org-active-statistics-turn-on))))
 
-(provide 'org-active-statistics.el)
+(provide 'org-active-statistics)
 ;;; org-active-statistics.el ends here
 
 ;; Local Variables:
