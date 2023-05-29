@@ -47,9 +47,10 @@
   "Return NIL if any checkbox in the current heading is not completed (i.e.,[X])."
   (save-excursion
     (org-up-heading-safe)
-    (and
-     (org-list-search-forward (org-item-beginning-re) (save-excursion (org-end-of-subtree)) t)
-     (--every (not (-contains-p it "[ ]")) (org-element-property :structure (org-element-at-point))))))
+    (org-narrow-to-subtree)
+    (let ((result (not (search-forward " [ ]" nil t))))
+      (widen)
+      result)))
 
 (defun oas/all-subheading-done-p ()
   "Return NIL if any there is any \"** TODO\" in the current heading."
