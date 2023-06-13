@@ -46,7 +46,7 @@
 (defun oas/all-checkbox-done-p ()
   "Return NIL if any checkbox in the current heading is not completed (i.e.,[X])."
   (save-excursion
-    (org-up-heading-safe)
+    (if (org-on-heading-p) (org-up-heading-safe) (org-back-to-heading))
     (org-narrow-to-subtree)
     (let ((result (not (search-forward " [ ]" nil t))))
       (widen)
@@ -55,7 +55,7 @@
 (defun oas/all-subheading-done-p ()
   "Return NIL if any there is any \"** TODO\" in the current heading."
   (save-excursion
-    (org-up-heading-safe)
+    (if (org-on-heading-p) (org-up-heading-safe) (org-back-to-heading))
     (end-of-line)
     (let ((end (save-excursion (org-end-of-subtree))))
       (if (search-forward "** DONE" end t)
@@ -64,17 +64,17 @@
 
 (defun oas/update-heading-by-completion (&optional _ _)
   "Update heading by completion."
-  (save-excursion
-    (org-back-to-heading)
-    (when (oas/valid-heading-p (org-heading-components))
-      (let (org-log-done
-            org-log-states
-            (todo (if (and
-                       (oas/all-checkbox-done-p)
-                       (oas/all-subheading-done-p))
-                      "DONE"
-                    "TODO")))
-        (org-todo todo)))))
+  (when (save-excursion
+          (if (org-on-heading-p) (org-up-heading-safe) (org-back-to-heading))
+          (oas/valid-heading-p (org-heading-components)))
+    (let (org-log-done
+          org-log-states
+          (todo (if (and
+                     (oas/all-checkbox-done-p)
+                     (oas/all-subheading-done-p))
+                    "DONE"
+                  "TODO")))
+      (org-todo todo))))
 
 (defun oas/org-active-statistics-turn-off ()
   (remove-hook 'org-after-todo-statistics-hook 'oas/update-heading-by-completion)
