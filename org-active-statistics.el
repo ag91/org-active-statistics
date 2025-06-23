@@ -85,7 +85,6 @@
   (add-hook 'org-checkbox-statistics-hook 'oas/update-heading-by-completion))
 
 ;;;###autoload
-
 (define-minor-mode org-active-statistics
   "Toggle active statistics.
 When a cookie is completed and all subtasks and checkbox are marked complete,
