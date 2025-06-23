@@ -39,8 +39,8 @@
 
 (defun oas/valid-heading-p (org-heading-components)
   "A valid ORG-HEADING-COMPONENTS for a heading must have a todo and some text in the headline."
-  (let ((todo-state (third org-heading-components))
-        (headline (fifth org-heading-components)))
+  (let ((todo-state (nth 2 org-heading-components))
+        (headline (nth 4 org-heading-components)))
     (and todo-state headline)))
 
 (defun oas/all-checkbox-done-p ()
